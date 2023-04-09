@@ -3,6 +3,7 @@ import os
 import sys
 import time
 import asyncio
+import unicodedata
 
 # Import the client
 from telethon import TelegramClient, events
@@ -59,8 +60,8 @@ async def worker(name):
         attributes = update.message.media.document.attributes
         for attr in attributes:
             if isinstance(attr, types.DocumentAttributeFilename):
-                file_name = attr.file_name
-                file_path = os.path.join(file_path, attr.file_name)
+                file_name = ascii_str = unicodedata.normalize(attr.file_name, unicode_str).encode('ASCII', 'ignore').decode('ASCII')
+                file_path = os.path.join(file_path, file_name)
         await message.edit('Downloading...')
         print("[%s] Download started at %s" % (file_name, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())))
         try:
@@ -102,7 +103,7 @@ async def handler(update):
         attributes = update.message.media.document.attributes
         for attr in attributes:
             if isinstance(attr, types.DocumentAttributeFilename):
-                file_name = attr.file_name
+                file_name = unicodedata.normalize(attr.file_name, unicode_str).encode('ASCII', 'ignore').decode('ASCII')
         print("[%s] Download queued at %s" % (file_name, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())))
         message = await update.reply('In queue')
         await queue.put([update, message])
